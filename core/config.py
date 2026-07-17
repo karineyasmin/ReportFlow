@@ -3,7 +3,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    # Usando Field(default=...) ou definindo um valor padrão resolve o aviso do linter
+
     PROJECT_NAME: str = Field(default="ReportFlow")
     API_V1_STR: str = Field(default="/api/v1")
 
@@ -18,7 +18,6 @@ class Settings(BaseSettings):
     CELERY_BROKER_URL: str = Field(default="redis://localhost:6379/0")
     CELERY_RESULT_BACKEND: str = Field(default="redis://localhost:6379/0")
 
-    # Permite ler do arquivo .env automaticamente, sobrescrevendo os defaults acima
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

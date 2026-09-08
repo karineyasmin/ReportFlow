@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # 1. Banco de dados relacional (Keycloak & App)
+  postgres:
+    image: postgres:15-alpine
+    container_name: reports_postgres
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - reportflow_net
+
+  # 2. Keycloak (Servidor IAM)
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: reports_keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/app_db
+      KC_DB_USERNAME: app_user
+      KC_DB_PASSWORD: app_password
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - reportflow_net
+
+  # 3. Redis (Broker & Result Backend do Celery)
+  redis:
+    image: redis:7-alpine
+    container_name: reports_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - reportflow_net
+
+  # 4. FastAPI API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reports_api
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - reports_storage:/app/downloads
+    environment:
+      - PROJECT_NAME=ReportFlow
+      - API_V1_STR=/api/v1
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=ReportFlowRealm
+      - KEYCLOAK_CLIENT_ID=reportflow-backend
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - KEYCLOAK_CERTS_URL=http://keycloak:8080/realms/ReportFlowRealm/protocol/openid-connect/certs
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - keycloak
+      - redis
+    networks:
+      - reportflow_net
+
+  # 5. Celery Background Worker
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reports_worker
+    command: celery -A app.tasks.worker.celery_app worker --loglevel=info
+    volumes:
+      - .:/app
+      - reports_storage:/app/downloads
+    environment:
+      - PROJECT_NAME=ReportFlow
+      - API_V1_STR=/api/v1
+      - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=ReportFlowRealm
+      - KEYCLOAK_CLIENT_ID=reportflow-backend
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
+      - KEYCLOAK_CERTS_URL=http://keycloak:8080/realms/ReportFlowRealm/protocol/openid-connect/certs
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - reportflow_net
+
+volumes:
+  postgres_data:
+  reports_storage:
+
+networks:
+  reportflow_net:
+    driver: bridge

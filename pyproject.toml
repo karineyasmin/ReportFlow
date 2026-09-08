@@ -1,0 +1,19 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "celery>=5.6.3",
+    "colorama>=0.4.6",
+    "fastapi==0.111.0",
+    "honcho>=2.0.0",
+    "pandas>=3.0.5",
+    "pydantic-settings==2.3.4",
+    "python-jose[cryptography]==3.3.0",
+    "python-multipart==0.0.9",
+    "requests>=2.34.2",
+    "types-python-jose>=3.5.0.20260408",
+    "uvicorn==0.30.1",
+]

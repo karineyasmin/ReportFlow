@@ -4,6 +4,7 @@ Background asynchronous tasks for report generation.
 
 import time
 from celery import Task
+from typing import Any
 
 from app.core import logger
 from app.services.report_generator import (

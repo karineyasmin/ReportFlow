@@ -10,8 +10,21 @@ help: ## Show this help message
 build: ## Build or rebuild application container images
 	docker compose build
 
-up: ## Start the entire ecosystem (App, Worker, Keycloak, Redis, DB)
+up: ## Start the entire ecosystem and display access URLs
 	docker compose up -d
+	@echo ""
+	@echo "============================================================"
+	@echo "  🚀 ReportFlow Ecosystem Running Successfully!             "
+	@echo "============================================================"
+	@echo "  • FastAPI Docs (Swagger): http://localhost:8000/docs"
+	@echo "  • FastAPI Alternative UI: http://localhost:8000/redoc"
+	@echo "  • Keycloak Admin Console: http://localhost:8080"
+	@echo "  • Redis Port:             localhost:6379"
+	@echo "  • PostgreSQL Port:        localhost:5432"
+	@echo "============================================================"
+	@echo "  💡 Tip: Hold Ctrl (or Cmd on macOS) and click the link."
+	@echo "============================================================"
+	@echo ""
 
 down: ## Stop and tear down all ecosystem containers
 	docker compose down

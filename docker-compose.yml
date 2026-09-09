@@ -20,7 +20,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
     container_name: reports_keycloak
-    command: start-dev
+    command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -28,6 +28,8 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/app_db
       KC_DB_USERNAME: app_user
       KC_DB_PASSWORD: app_password
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
     ports:
       - "8080:8080"
     depends_on:
@@ -60,6 +62,7 @@ services:
       - PROJECT_NAME=ReportFlow
       - API_V1_STR=/api/v1
       - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_PUBLIC_URL=http://localhost:8080
       - KEYCLOAK_REALM=ReportFlowRealm
       - KEYCLOAK_CLIENT_ID=reportflow-backend
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}
@@ -86,6 +89,7 @@ services:
       - PROJECT_NAME=ReportFlow
       - API_V1_STR=/api/v1
       - KEYCLOAK_SERVER_URL=http://keycloak:8080
+      - KEYCLOAK_PUBLIC_URL=http://localhost:8080
       - KEYCLOAK_REALM=ReportFlowRealm
       - KEYCLOAK_CLIENT_ID=reportflow-backend
       - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET}

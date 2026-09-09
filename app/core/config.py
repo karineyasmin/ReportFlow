@@ -9,6 +9,7 @@ class Settings(BaseSettings):
 
     # Keycloak
     KEYCLOAK_SERVER_URL: str = Field(default="http://localhost:8080")
+    KEYCLOAK_PUBLIC_URL: str = Field(default="http://localhost:8080")
     KEYCLOAK_REALM: str = Field(default="ReportFlowRealm")
     KEYCLOAK_CLIENT_ID: str = Field(default="reportflow-backend")
     KEYCLOAK_CLIENT_SECRET: str = Field(default="")

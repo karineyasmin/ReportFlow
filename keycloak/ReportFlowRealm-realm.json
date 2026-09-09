@@ -1,0 +1,30 @@
+{
+  "realm": "ReportFlowRealm",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "report_admin",
+        "description": "Can create and manage reports"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "reportflow-backend",
+      "name": "ReportFlow API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:8000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8000"
+      ]
+    }
+  ]
+}

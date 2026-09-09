@@ -10,7 +10,16 @@ import requests
 
 from app.core import settings, logger
 
-token_url = f"{settings.KEYCLOAK_CERTS_URL}/realms/{settings.KEYCLOAK_REALM}/protocol/openid-connect/token"
+keycloak_realm_path = (
+    f"{settings.KEYCLOAK_SERVER_URL.rstrip('/')}/realms/{settings.KEYCLOAK_REALM}"
+)
+public_keycloak_realm_path = (
+    f"{settings.KEYCLOAK_PUBLIC_URL.rstrip('/')}/realms/{settings.KEYCLOAK_REALM}"
+)
+token_url = f"{public_keycloak_realm_path}/protocol/openid-connect/token"
+certs_url = settings.KEYCLOAK_CERTS_URL or (
+    f"{keycloak_realm_path}/protocol/openid-connect/certs"
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=token_url)
 
@@ -25,7 +34,7 @@ def get_keycloack_public_keys() -> dict[str, Any]:
     global _jwks_cache
     if not _jwks_cache:
         try:
-            response = requests.get(settings.KEYCLOAK_CERTS_URL, timeout=10)
+            response = requests.get(certs_url, timeout=10)
             response.raise_for_status()
             _jwks_cache = response.json()
             logger.info("Successfuly fetched public keys (JWKS) from Keycloak.")
@@ -86,13 +95,13 @@ def require_role(required_role: str):
         realm_access = payload.get("realm_access", {})
         roles = realm_access.get("roles", [])
 
-        if require_role not in roles:
+        if required_role not in roles:
             logger.warning(
-                f"Access denied. Required role '{require_role}' not found in user roles."
+                f"Access denied. Required role '{required_role}' not found in user roles."
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"User lacks required role: '{require_role}'",
+                detail=f"User lacks required role: '{required_role}'",
             )
         return payload
 
